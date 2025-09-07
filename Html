@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cabritinho Pulador</title>
+<style>
+  body { margin: 0; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // Configuração da cena
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Colina (chão)
+  const planeGeometry = new THREE.PlaneGeometry(50, 50, 10, 10);
+  const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x88cc88, side: THREE.DoubleSide });
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.rotation.x = Math.PI / 2;
+  scene.add(plane);
+
+  // Cabritinho (cubo simples por enquanto)
+  const goatGeometry = new THREE.BoxGeometry(1, 1, 1);
+  const goatMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+  const goat = new THREE.Mesh(goatGeometry, goatMaterial);
+  goat.position.y = 0.5; // Começa no chão
+  scene.add(goat);
+
+  // Luz ambiente
+  const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+  scene.add(ambientLight);
+
+  // Luz direcional
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(0, 1, 0);
+  scene.add(directionalLight);
+
+  camera.position.z = 5;
+  camera.position.y = 2;
+  camera.lookAt(goat.position);
+
+  let jumpHeight = 0;
+  let jumpSpeed = 0.05;
+  let isJumping = false;
+  let jumpProgress = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (!isJumping) {
+      isJumping = true;
+      jumpProgress = 0;
+    }
+
+    jumpProgress += jumpSpeed;
+    jumpHeight = Math.sin(jumpProgress * Math.PI) * 1; // Altura do pulo
+    goat.position.y = 0.5 + Math.max(0, jumpHeight); // Garante que não vá para baixo do chão
+
+    if (jumpProgress >= 1) {
+      isJumping = false;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // Lidar com o redimensionamento da janela
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>
